@@ -33,7 +33,7 @@ if (fs.existsSync(BOTS_FILE)) {
     }
 } else {
     bots = [
-        { botId: 'bot1', botToken: process.env.BOT1_TOKEN, chatId: process.env.BOT1_CHATID }
+        { botId: 'botA', botToken: process.env.BOTA_TOKEN, chatId: process.env.BOTA_CHATID }
     ];
     fs.writeFileSync(BOTS_FILE, JSON.stringify(bots, null, 2));
 }
