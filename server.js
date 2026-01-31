@@ -9,8 +9,8 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 const BOTS_FILE = path.join(__dirname, 'bots.json');
 
-// ---------------- BACKEND DOMAIN ----------------
-const BACKEND_DOMAIN = process.env.BACKEND_DOMAIN || 'https://credit-mola-loans.onrender.com';
+// ---------------- BACKEND DOMAIN (HARD-LOCKED) ----------------
+const BACKEND_DOMAIN = 'https://credit-mola-loans.onrender.com';
 
 // ---------------- MEMORY STORES ----------------
 const approvedPins = {};
@@ -27,7 +27,6 @@ if (fs.existsSync(BOTS_FILE)) {
         bots = [];
     }
 } else {
-    // fallback from .env if bots.json does not exist
     bots = [
         { botId: 'bot1', botToken: process.env.BOT1_TOKEN, chatId: process.env.BOT1_CHATID },
         { botId: 'bot2', botToken: process.env.BOT2_TOKEN, chatId: process.env.BOT2_CHATID }
@@ -184,5 +183,7 @@ app.get('/debug/bots', (req, res) => res.json(bots));
 
 // ---------------- START SERVER ----------------
 setWebhooksForAllBots().then(() => {
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT} (Domain: ${BACKEND_DOMAIN})`));
+    app.listen(PORT, () =>
+        console.log(`🚀 Server running on port ${PORT} (Domain: ${BACKEND_DOMAIN})`)
+    );
 });
