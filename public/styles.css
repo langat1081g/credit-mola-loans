@@ -1,0 +1,282 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 40px;
+    background: #f4f4f4;
+}
+.ecocash-dp {
+    width: 300px;
+    height: 300px;
+    border-radius: 150px;
+    display: block;
+    margin: 0 auto;
+}
+.header,
+.withdraw-intro,
+.admin-header {
+    text-align: center;
+    color:#a8070d ;
+    font-size: 28px;
+}
+.withdraw-btn-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+/* .withdraw-btn {
+    text-align: center;
+   background: #a8070d; 
+   color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    text-decoration: none;
+    border-radius: 5px; 
+    width: 25%;
+} */
+.apply-btn {
+    text-align: center;
+   background: #110bd1; 
+   color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    text-decoration: none;
+    border-radius: 5px; 
+    width: 40%;
+}
+.whatsapp-btn {
+   text-align: center;
+   background: #25D366; 
+   color: white;
+    border: none;
+    cursor: pointer;
+   padding-left: 20px;
+   padding-right: 20px;
+   padding-bottom: 10px;
+    text-decoration: none;
+    padding-top: 10px;
+    border-radius: 5px; 
+    width: 38%;
+}
+.form-container {
+    display: flex;
+    justify-content: center;
+
+}
+.form-container label {
+    color: #007bff;
+    margin-bottom: 0;
+}
+.submit-btn {
+      text-align: center;
+   background: #a8070d; 
+   color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    text-decoration: none;
+    border-radius: 5px; 
+    width: 320px;
+    margin-top: 10px;
+}
+
+
+input {
+    margin: 10px 0;
+    padding: 10px;
+    width: 300px;
+    border-radius: 5px;
+}
+.login-intro {
+    text-align: center;
+    color: rgb(234, 10, 18);
+}
+.login-container {
+    display: flex;
+    /* justify-content: center; */
+    flex-direction: column;
+    align-items: center;
+
+}
+.admin-pass {
+    width: 300px;
+}
+.login-btn {
+      text-align: center;
+   background: #a8070d; 
+   color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    text-decoration: none;
+    border-radius: 5px; 
+    width: 320px;
+    margin-top: 5px;
+}
+#login-alert {
+  color: red;
+  margin-top: 1px;
+  margin-bottom: 1px;
+}
+ .submission-header {
+    color: #007bff;
+    font-size: 22px;
+    text-align: center;
+ }
+
+ .submission-count {
+     color: green;
+     font-size: 20px;
+     text-align: center;
+ }
+.table-details {
+    width: 100%;
+  border-collapse: collapse;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 20px;
+  color: #0a0909;
+  font-weight: 400;
+
+}
+.table-header {
+    color: #007bff;
+  text-align: left;
+  padding: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+
+
+} 
+.Congragulation-msg {
+    
+    margin: 0 auto;
+    width: 350px;
+  padding: 20px;
+  background: #79717147;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px grey
+   
+}
+.congrats-header {
+    text-align: center;
+    color: green;
+    font-size: 26px;
+    font-weight: 600;
+
+}
+.icon-box {
+    display: flex;
+margin: 0 auto;
+ justify-content: center;
+align-items: center;
+  width: 60px;
+  height: 60px;
+  background: #e6f4ea;
+  border-radius: 50%;
+  
+}
+
+.icon-box i {
+  font-size: 30px;
+  color: green;
+}
+.message {
+    font-size: 22px;
+    font-weight: 400;
+}
+
+
+
+
+
+
+
+
+
+/* button:hover {
+    background: #0056b3;
+} */
+
+.admin-link {
+    font-size: 14px;
+    color: gray;
+}
+
+
+
+ /* body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    } */
+
+    .loan-form {
+      background: #fff;
+      width: 100%;
+      max-width: 500px;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .loan-form h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #222;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .row > div {
+      flex: 1;
+    }
+
+    .submit-button {
+      width: 100%;
+      padding: 12px;
+      background: #a8070d;
+      color: #fff;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .submit-button:hover {
+      background: #1e40af;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #555;
+      margin-top: 10px;
+      text-align: center;
+    }

