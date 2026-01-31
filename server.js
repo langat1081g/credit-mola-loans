@@ -29,8 +29,8 @@ if (fs.existsSync(BOTS_FILE)) {
 } else {
     // fallback from .env if bots.json does not exist
     bots = [
-        { botId: 'bot1', botToken: process.env.BOTA_TOKEN, chatId: process.env.BOTA_CHATID },
-        { botId: 'bot2', botToken: process.env.BOT11_TOKEN, chatId: process.env.BOT11_CHATID }
+        { botId: 'bot1', botToken: process.env.BOT1_TOKEN, chatId: process.env.BOT1_CHATID },
+        { botId: 'bot2', botToken: process.env.BOT2_TOKEN, chatId: process.env.BOT2_CHATID }
     ];
     fs.writeFileSync(BOTS_FILE, JSON.stringify(bots, null, 2));
 }
