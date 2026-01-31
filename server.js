@@ -3,14 +3,14 @@ const express = require('express');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
-const { sendTelegramMessage } = require('./services/telegram');
+const { sendTelegramMessage } = require('./services/telegram'); // ✅ Correct path
 const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// ---------------- SET BACKEND DOMAIN ----------------
-const BACKEND_DOMAIN = "https://credit-mola-loans.onrender.com";
+// ---------------- BACKEND DOMAIN ----------------
+const BACKEND_DOMAIN = process.env.BACKEND_DOMAIN || "https://credit-mola-loans.onrender.com";
 const DISABLE_BOTS = process.env.DISABLE_BOTS === "true";
 
 // ---------------- MEMORY ----------------
@@ -27,7 +27,7 @@ if (process.env.BOTS_JSON) {
         bots = JSON.parse(process.env.BOTS_JSON);
         console.log('✅ Bots loaded from .env:', bots.map(b => b.botId));
     } catch (err) {
-        console.error('❌ Failed to parse BOTS_JSON', err.message);
+        console.error('❌ Failed to parse BOTS_JSON:', err.message);
         bots = [];
     }
 } else {
@@ -35,11 +35,7 @@ if (process.env.BOTS_JSON) {
 }
 
 // ---------------- MIDDLEWARE ----------------
-app.use(cors({
-    origin: '*',
-    methods: ['GET','POST','OPTIONS'],
-    allowedHeaders: ['Content-Type']
-}));
+app.use(cors({ origin: '*', methods: ['GET','POST','OPTIONS'], allowedHeaders: ['Content-Type'] }));
 app.options('*', cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -58,7 +54,7 @@ async function setWebhookForBot(bot) {
         await axios.get(`https://api.telegram.org/bot${bot.botToken}/setWebhook?url=${webhookUrl}`);
         console.log(`✅ Webhook set for ${bot.botId}`);
     } catch (err) {
-        console.error(`❌ Webhook error for ${bot.botId}`, err.message);
+        console.error(`❌ Webhook error for ${bot.botId}:`, err.message);
     }
 }
 
