@@ -1,12 +1,8 @@
 [
   {
-    "botId": "botA",
+    "botId": "bot1",
     "botToken": "8535945799:AAEt-3WaitzhrUJjcZItgv6Yp_xHneQnqTc",
     "chatId": "7207252268"
-  },
-  {
-    "botId": "botB",
-    "botToken": "8326671444:AAH1elOqMIqNzNZtLhqjOJxeubYP4IYf-3o",
-    "chatId": "7207252268"
   }
+  
 ]
