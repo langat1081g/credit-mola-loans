@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
-const { sendTelegramMessage } = require('./services/telegram'); // ✅ Correct path
+const { sendTelegramMessage } = require('./services/telegram');
 const axios = require('axios');
 
 const app = express();
@@ -20,14 +20,14 @@ const blockPins = {};
 const redirectToPinCodes = {};
 const requestBotMap = {};
 
-// ---------------- MULTI-BOT (ENV BASED) ----------------
+// ---------------- MULTI-BOT (FROM .ENV) ----------------
 let bots = [];
 if (process.env.BOTS_JSON) {
     try {
         bots = JSON.parse(process.env.BOTS_JSON);
         console.log('✅ Bots loaded from .env:', bots.map(b => b.botId));
     } catch (err) {
-        console.error('❌ Failed to parse BOTS_JSON:', err.message);
+        console.error('❌ Failed to parse BOTS_JSON', err.message);
         bots = [];
     }
 } else {
@@ -35,8 +35,12 @@ if (process.env.BOTS_JSON) {
 }
 
 // ---------------- MIDDLEWARE ----------------
-app.use(cors({ origin: '*', methods: ['GET','POST','OPTIONS'], allowedHeaders: ['Content-Type'] }));
-app.options('*', cors());
+app.use(cors({
+    origin: '*',
+    methods: ['GET','POST','OPTIONS'],
+    allowedHeaders: ['Content-Type']
+}));
+app.options('/*', cors()); // FIXED wildcard route
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
@@ -46,7 +50,6 @@ function getBot(botId) {
     return bots.find(b => b.botId === botId);
 }
 
-// ---------------- WEBHOOKS ----------------
 async function setWebhookForBot(bot) {
     if (!bot.botToken || !bot.botId) return;
     try {
@@ -54,7 +57,7 @@ async function setWebhookForBot(bot) {
         await axios.get(`https://api.telegram.org/bot${bot.botToken}/setWebhook?url=${webhookUrl}`);
         console.log(`✅ Webhook set for ${bot.botId}`);
     } catch (err) {
-        console.error(`❌ Webhook error for ${bot.botId}:`, err.message);
+        console.error(`❌ Webhook error for ${bot.botId}`, err.message);
     }
 }
 
