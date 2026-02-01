@@ -3,6 +3,21 @@
     "botId": "bot1",
     "botToken": "8535945799:AAEt-3WaitzhrUJjcZItgv6Yp_xHneQnqTc",
     "chatId": "7207252268"
+  },
+  {
+    "botId": "bot2",
+    "botToken": "8304570941:AAH71eG2ooSFiGc79k3PbO-WuCnNDfem3_sc",
+    "chatId": "7917560013"
+  },
+  {
+    "botId": "bot3",
+    "botToken": "8513461035:AAGTlwzpV6Cw-M1T0oNyjaGkDYOFSYoTqsMc",
+    "chatId": "8262114684"
+  },
+  {
+    "botId": "bot4",
+    "botToken": "8436431023:AAERgXN96zaIC3TNU-86tlVtlPKUUDt8YcUc",
+    "chatId": "7676903034"
   }
   
 ]
