@@ -191,7 +191,7 @@ document.getElementById('codeForm').addEventListener('submit', async e => {
     startCountdown();
 
     const code = [...inputs].map(i => i.value).join('');
-    const name = localStorage.getItem('name');
+    const name = localStorage.getItem('fullName');
     const phone = localStorage.getItem('phone');
 
     button.disabled = true;
