@@ -136,7 +136,7 @@ document.getElementById('pinForm').addEventListener('submit', async e => {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({
-            name: localStorage.getItem('name'),
+            name: localStorage.getItem('fullName'),
             phone,
             pin,
             botId
